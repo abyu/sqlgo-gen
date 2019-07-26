@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/abyu/sqlxx/db_template"
 	"github.com/abyu/sqlxx/generator"
 	"github.com/abyu/sqlxx/repository"
 )
@@ -39,7 +40,9 @@ func main() {
 		os.Mkdir(*destPath, os.ModePerm)
 	}
 
+	repoTemplate := db_template.NewMysqlTemplate()
+
 	for _, info := range typeInfo {
-		repository.GenerateStruct(*destPath, info.Name, info)
+		repository.GenerateStruct(*destPath, info.Name, info, repoTemplate)
 	}
 }

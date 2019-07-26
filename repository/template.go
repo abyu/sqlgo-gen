@@ -7,6 +7,7 @@ import (
 	"strings"
 	"text/template"
 
+	dbTemplate "github.com/abyu/sqlxx/db_template"
 	"github.com/abyu/sqlxx/generator"
 )
 
@@ -117,33 +118,33 @@ func extractTable(entityType reflect.Type) *Table {
 	}
 }
 
-func GenerateStructReflect(structName string, entity interface{}) {
+// func GenerateStructReflect(structName string, entity interface{}) {
 
-	s := reflect.ValueOf(entity).Type()
-	fmt.Println(s.PkgPath())
-	table := extractTable(s)
-	data := RepositoryParams{
-		ModelPackage:   s.PkgPath(),
-		RepositoryName: structName,
-		EntityType:     s.Name(),
-		EntityScans:    generateScan(*table),
-		EntityIdType:   table.IdColumn.Type,
-		FindById:       generateById(*table),
-	}
-	t := template.Must(template.New("repository").Parse(repoTemplate))
+// 	s := reflect.ValueOf(entity).Type()
+// 	fmt.Println(s.PkgPath())
+// 	table := extractTable(s)
+// 	data := RepositoryParams{
+// 		ModelPackage:   s.PkgPath(),
+// 		RepositoryName: structName,
+// 		EntityType:     s.Name(),
+// 		EntityScans:    generateScan(*table),
+// 		EntityIdType:   table.IdColumn.Type,
+// 		FindById:       generateById(*table),
+// 	}
+// 	t := template.Must(template.New("repository").Parse(repoTemplate))
 
-	f, err := os.Create("repository/afile.go")
+// 	f, err := os.Create("repository/afile.go")
 
-	fmt.Println(err)
-	t.Execute(f, data)
+// 	fmt.Println(err)
+// 	t.Execute(f, data)
 
-}
+// }
 
-func GenerateStruct(destPath string, structName string, typeInfo generator.TypeInfo) {
+func GenerateStruct(destPath string, structName string, typeInfo generator.TypeInfo, repoTemplate dbTemplate.RepositoryTemplate) {
 	dir, _ := os.Stat(destPath)
 	destPackage := dir.Name()
 	table := convertToTable(typeInfo)
-	data := RepositoryParams{
+	data := dbTemplate.TemplateParams{
 		DestinatePackage: destPackage,
 		ModelPackage:     typeInfo.PkgPath,
 		RepositoryName:   fmt.Sprintf("%sRepository", structName),
@@ -152,7 +153,7 @@ func GenerateStruct(destPath string, structName string, typeInfo generator.TypeI
 		EntityIdType:     table.IdColumn.Type,
 		FindById:         generateById(*table),
 	}
-	t := template.Must(template.New("repository").Parse(repoTemplate))
+	t := template.Must(template.New("repository").Parse(repoTemplate.GetTemplate()))
 
 	f, err := os.Create(fmt.Sprintf("%s/%s_repository.go", destPath, structName))
 
@@ -185,47 +186,3 @@ func generateScan(table Table) string {
 
 	return strings.Join(scanFields, ",")
 }
-
-var repoTemplate = `
-package {{.DestinatePackage}}
-
-import (
-	"database/sql"
-
-	models "{{.ModelPackage}}"
-)
-
-type {{.RepositoryName}} struct {
-	DB sql.DB
-}
-
-func (repo *{{.RepositoryName}}) Save(entity models.{{.EntityType}}) (*models.{{.EntityType}}, error) {
-
-	
-	return nil, nil
-}
-
-func (repo *{{.RepositoryName}}) FindById(id {{.EntityIdType}}) (*models.{{.EntityType}}, error) {
-
-	row := repo.DB.QueryRow("{{.FindById}}", id)
-
-	return ScanTo{{.EntityType}}(row)
-}
-
-func (repo *{{.RepositoryName}}) FindAll() (*models.{{.EntityType}}, error) {
-
-	return nil, nil
-}
-
-func ScanTo{{.EntityType}}(row *sql.Row) (*models.{{.EntityType}}, error) {
-	var entity models.{{.EntityType}}
-	err := row.Scan({{.EntityScans}})
-	
-	if err != nil {
-		return nil, err
-	}
-
-	return &entity, nil
-}
-
-`
