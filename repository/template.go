@@ -17,12 +17,13 @@ import (
 // }
 
 type RepositoryParams struct {
-	RepositoryName string
-	EntityType     string
-	EntityScans    string
-	EntityIdType   string
-	FindById       string
-	ModelPackage   string
+	RepositoryName   string
+	EntityType       string
+	EntityScans      string
+	EntityIdType     string
+	FindById         string
+	ModelPackage     string
+	DestinatePackage string
 }
 
 type Table struct {
@@ -138,20 +139,22 @@ func GenerateStructReflect(structName string, entity interface{}) {
 
 }
 
-func GenerateStruct(structName string, typeInfo generator.TypeInfo) {
-
+func GenerateStruct(destPath string, structName string, typeInfo generator.TypeInfo) {
+	dir, _ := os.Stat(destPath)
+	destPackage := dir.Name()
 	table := convertToTable(typeInfo)
 	data := RepositoryParams{
-		ModelPackage:   typeInfo.PkgPath,
-		RepositoryName: fmt.Sprintf("%sRepository", structName),
-		EntityType:     typeInfo.Name,
-		EntityScans:    generateScan(*table),
-		EntityIdType:   table.IdColumn.Type,
-		FindById:       generateById(*table),
+		DestinatePackage: destPackage,
+		ModelPackage:     typeInfo.PkgPath,
+		RepositoryName:   fmt.Sprintf("%sRepository", structName),
+		EntityType:       typeInfo.Name,
+		EntityScans:      generateScan(*table),
+		EntityIdType:     table.IdColumn.Type,
+		FindById:         generateById(*table),
 	}
 	t := template.Must(template.New("repository").Parse(repoTemplate))
 
-	f, err := os.Create(fmt.Sprintf("repository/%s_repository.go", structName))
+	f, err := os.Create(fmt.Sprintf("%s/%s_repository.go", destPath, structName))
 
 	fmt.Println(err)
 	t.Execute(f, data)
@@ -184,7 +187,7 @@ func generateScan(table Table) string {
 }
 
 var repoTemplate = `
-package repository
+package {{.DestinatePackage}}
 
 import (
 	"database/sql"

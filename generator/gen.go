@@ -8,12 +8,12 @@ import (
 	"golang.org/x/tools/go/packages"
 )
 
-func LoadPackage() []TypeInfo {
+func LoadPackage(packageSourcePath string) []TypeInfo {
 	cfg := &packages.Config{
 		Mode: packages.LoadTypes | packages.NeedTypesInfo | packages.LoadSyntax,
 	}
 
-	pkgs, err := packages.Load(cfg, "./models")
+	pkgs, err := packages.Load(cfg, packageSourcePath)
 	builder := TypeInfoBuilder{PkgPath: pkgs[0].PkgPath}
 	file := pkgs[0].Syntax
 
