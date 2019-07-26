@@ -7,7 +7,6 @@ import (
 
 	"github.com/abyu/sqlxx/db_template"
 	"github.com/abyu/sqlxx/generator"
-	"github.com/abyu/sqlxx/repository"
 )
 
 var (
@@ -43,6 +42,6 @@ func main() {
 	repoTemplate := db_template.NewMysqlTemplate()
 
 	for _, info := range typeInfo {
-		repository.GenerateStruct(*destPath, info.Name, info, repoTemplate)
+		generator.GenerateStruct(*destPath, info.Name, info, repoTemplate)
 	}
 }

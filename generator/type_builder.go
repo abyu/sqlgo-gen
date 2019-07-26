@@ -2,26 +2,29 @@ package generator
 
 import (
 	"go/ast"
+	"strconv"
 	"strings"
 )
 
-type TypeInfo struct {
-	PkgPath string
-	Name    string
-	Fields  []Field
-}
+type (
+	TypeInfo struct {
+		PkgPath string
+		Name    string
+		Fields  []Field
+	}
 
-type Field struct {
-	Name string
-	Type string
-	Tags map[string]string
-}
+	Field struct {
+		Name string
+		Type string
+		Tags map[string]string
+	}
 
-type TypeInfoBuilder struct {
-	PkgPath  string
-	current  *TypeInfo
-	AllTypes []TypeInfo
-}
+	TypeInfoBuilder struct {
+		PkgPath  string
+		current  *TypeInfo
+		AllTypes []TypeInfo
+	}
+)
 
 func (builder *TypeInfoBuilder) StartNew(typeSpec *ast.TypeSpec) {
 
@@ -32,7 +35,9 @@ func (builder *TypeInfoBuilder) StartNew(typeSpec *ast.TypeSpec) {
 }
 
 func (builder *TypeInfoBuilder) AddFields(fieldList *ast.FieldList) {
-
+	if builder.current == nil {
+		return
+	}
 	fields := []Field{}
 	for _, field := range fieldList.List {
 		expr := field.Type
@@ -40,14 +45,13 @@ func (builder *TypeInfoBuilder) AddFields(fieldList *ast.FieldList) {
 			field := Field{
 				Name: field.Names[0].Name,
 				Type: typ.Name,
-				Tags: buildMap(field.Tag.Value),
+				Tags: buildMap(field.Tag),
 			}
 			fields = append(fields, field)
 		}
 	}
-	if builder.current != nil {
-		(*builder.current).Fields = fields
-	}
+
+	(*builder.current).Fields = fields
 }
 
 func (builder *TypeInfoBuilder) EndCurrent() {
@@ -57,16 +61,21 @@ func (builder *TypeInfoBuilder) EndCurrent() {
 	}
 }
 
-func buildMap(tagListRaw string) map[string]string {
+func buildMap(tag *ast.BasicLit) map[string]string {
+
 	tags := map[string]string{}
 
-	tagListRaw = strings.ReplaceAll(tagListRaw, "`", "")
-	tagListRaw = strings.ReplaceAll(tagListRaw, `"`, "")
+	if tag == nil || tag.Value == "" {
+		return tags
+	}
+
+	tagListRaw := tag.Value
+	tagListRaw, _ = strconv.Unquote(tagListRaw)
 	allTags := strings.Split(tagListRaw, " ")
 
 	for _, tag := range allTags {
 		kv := strings.Split(tag, ":")
-		tags[kv[0]] = kv[1]
+		tags[kv[0]], _ = strconv.Unquote(kv[1])
 	}
 
 	return tags
