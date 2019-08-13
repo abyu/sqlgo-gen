@@ -1,3 +1,3 @@
 // +build integration
 
-package sqlxx_test
+package sqlgogen_test

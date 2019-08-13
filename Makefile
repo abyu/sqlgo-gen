@@ -1,6 +1,6 @@
 .PHONY: build
 build: 
-	go build -o output/sqlxx main.go
+	go build -o output/sqlgogen main.go
 
 .PHONY: test
 test:

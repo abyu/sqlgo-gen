@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/abyu/sqlxx/db_template"
-	"github.com/abyu/sqlxx/generator"
+	"github.com/abyu/sqlgogen/db_template"
+	"github.com/abyu/sqlgogen/generator"
 )
 
 var (
@@ -16,7 +16,7 @@ var (
 
 func Usage() {
 	fmt.Fprintf(os.Stderr, "Usage:\n")
-	fmt.Fprintf(os.Stderr, "\tsqlxx [flags]:\n")
+	fmt.Fprintf(os.Stderr, "\tsqlgogen [flags]:\n")
 	fmt.Fprintf(os.Stderr, "Flags:\n")
 	flag.PrintDefaults()
 }

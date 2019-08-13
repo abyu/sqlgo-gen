@@ -6,7 +6,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/abyu/sqlxx/db_template"
+	"github.com/abyu/sqlgogen/db_template"
 )
 
 type (

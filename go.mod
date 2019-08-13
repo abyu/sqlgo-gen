@@ -1,4 +1,4 @@
-module github.com/abyu/sqlxx
+module github.com/abyu/sqlgogen
 
 go 1.12
 
