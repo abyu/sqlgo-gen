@@ -15,6 +15,7 @@ type TemplateParams struct {
 	FindById         string
 	ModelPackage     string
 	DestinatePackage string
+	FindAll          string
 }
 
 func NewMysqlTemplate() RepositoryTemplate {
@@ -50,15 +51,21 @@ func (repo *{{.StoreName}}) FindById(id {{.EntityIdType}}) (*models.{{.EntityTyp
 
 	row := repo.DB.QueryRow("{{.FindById}}", id)
 
-	return ScanTo{{.EntityType}}(row)
+	return scan{{.EntityType}}(row)
 }
 
-func (repo *{{.StoreName}}) FindAll() (*models.{{.EntityType}}, error) {
+func (repo *{{.StoreName}}) FindAll() ([]models.{{.EntityType}}, error) {
 
-	return nil, nil
+	rows, err := repo.DB.Query("{{.FindAll}}")
+
+	if err != nil {
+		return nil, err
+	}
+
+	return scan{{.EntityType}}List(rows)
 }
 
-func ScanTo{{.EntityType}}(row *sql.Row) (*models.{{.EntityType}}, error) {
+func scan{{.EntityType}}(row *sql.Row) (*models.{{.EntityType}}, error) {
 	var entity models.{{.EntityType}}
 	err := row.Scan({{.EntityScans}})
 	
@@ -68,4 +75,20 @@ func ScanTo{{.EntityType}}(row *sql.Row) (*models.{{.EntityType}}, error) {
 
 	return &entity, nil
 }
+
+func scan{{.EntityType}}List(rows *sql.Rows) ([]models.{{.EntityType}}, error) {
+
+	var entities = []models.{{.EntityType}}{}
+	for rows.Next() {
+		var entity models.{{.EntityType}}
+		err := rows.Scan({{.EntityScans}})
+		if err != nil {
+			return nil, err
+		}
+		entities = append(entities, entity)
+	}
+
+	return entities, nil
+}
+
 `

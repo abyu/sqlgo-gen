@@ -8,6 +8,6 @@ type AnEntity struct {
 
 type AnotherEntity struct {
 	Id      int64  `table:"entiry" id:"id"`
-	AField1 string `column:"field1"`
-	BField2 string `column:"field2"`
+	AField1 string `column:"afield1"`
+	BField2 string `column:"bfield2"`
 }

@@ -35,6 +35,7 @@ func GenerateStruct(destPath string, structName string, typeInfo TypeInfo, repoT
 		EntityScans:      generateScan(*table),
 		EntityIdType:     table.IdColumn.Type,
 		FindById:         generateById(*table),
+		FindAll:          generateAll(*table),
 	}
 	t := template.Must(template.New("repository").Parse(repoTemplate.GetTemplate()))
 
@@ -106,4 +107,19 @@ func generateScan(table Table) string {
 	}
 
 	return strings.Join(scanFields, ",")
+}
+
+func generateAll(table Table) string {
+
+	selectTemplate := "SELECT %s FROM %s"
+
+	dbFields := []string{}
+	for _, column := range table.Fields {
+		dbFields = append(dbFields, column.DbFieldName)
+	}
+
+	fieldsQuery := strings.Join(dbFields, ",")
+	sqlQuery := fmt.Sprintf(selectTemplate, fieldsQuery, table.TableName)
+
+	return sqlQuery
 }
